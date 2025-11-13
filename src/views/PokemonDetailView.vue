@@ -22,9 +22,12 @@ const heroImage = computed(() => {
     return { artwork: '', fallback: '' }
   }
   const artwork = getOfficialArtworkUrl(pokemon.value.id)
-  const fallback = (pokemon.value.sprites.other?.['official-artwork']?.['front_default'] ??
-    pokemon.value.sprites.front_default ??
-    getFallbackSpriteUrl(pokemon.value.id)) as string
+  const otherSprites = pokemon.value.sprites.other as
+    | Record<string, Record<string, string | null>>
+    | undefined
+  const officialArtwork = otherSprites?.['official-artwork']?.['front_default'] ?? null
+  const fallback =
+    officialArtwork ?? pokemon.value.sprites.front_default ?? getFallbackSpriteUrl(pokemon.value.id)
   return { artwork, fallback }
 })
 

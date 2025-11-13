@@ -59,7 +59,9 @@ const searchQuery = computed({
 })
 
 const selectedTypes = computed(() => filtersStore.selectedTypes)
-const selectedGenerations = computed(() => filtersStore.selectedGenerations)
+const selectedGenerations = computed(
+  () => filtersStore.selectedGenerations as Array<keyof typeof GENERATION_RANGES>,
+)
 const hasTypeFilter = computed(() => selectedTypes.value.length > 0)
 const typeFilteredResources = ref<Array<{ name: string; url: string }> | null>(null)
 const typeLoading = ref(false)
@@ -67,7 +69,7 @@ const typeLoading = ref(false)
 const generationFilter = computed({
   get: () => selectedGenerations.value[0] ?? '',
   set: (value: string) => {
-    filtersStore.setGenerations(value ? [value] : [])
+    filtersStore.setGenerations(value ? [value as keyof typeof GENERATION_RANGES] : [])
   },
 })
 
@@ -141,7 +143,7 @@ const filteredResults = computed(() => {
       }
       if (selectedGenerations.value.length) {
         const matchesGeneration = selectedGenerations.value.some((generation) => {
-          const range = GENERATION_RANGES[generation]
+          const range = generation ? GENERATION_RANGES[generation] : undefined
           if (!range) return true
           return id >= range[0] && id <= range[1]
         })
@@ -182,7 +184,11 @@ watch(selectedGenerations, (generations, previous) => {
     }
     return
   }
-  const range = GENERATION_RANGES[generations[0]]
+  const activeGeneration = generations[0]
+  if (!activeGeneration) {
+    return
+  }
+  const range = GENERATION_RANGES[activeGeneration]
   if (!range) return
   const desiredOffset = Math.max(0, range[0] - 1)
   if (pagination.value.offset !== desiredOffset) {
