@@ -52,6 +52,17 @@ function stableParamsKey(params: Record<string, string>) {
     .join('|')
 }
 
+function normalizeIdentifier(identifier: number | string): number | string {
+  if (typeof identifier === 'string') {
+    const maybeNumber = Number(identifier)
+    if (!Number.isNaN(maybeNumber) && identifier.trim() !== '') {
+      return maybeNumber
+    }
+    return identifier.toLowerCase()
+  }
+  return identifier
+}
+
 export const usePokemonStore = defineStore('pokemon', {
   state: (): PokemonStoreState => ({
     pokemonById: {},
@@ -76,18 +87,19 @@ export const usePokemonStore = defineStore('pokemon', {
   },
   actions: {
     async ensurePokemon(identifier: number | string) {
+      const normalized = normalizeIdentifier(identifier)
       const cached =
-        typeof identifier === 'number'
-          ? this.pokemonById[identifier]
-          : this.getPokemonByName(identifier)
+        typeof normalized === 'number'
+          ? this.pokemonById[normalized]
+          : this.getPokemonByName(normalized)
       if (cached) {
         return cached
       }
 
-      const statusKey = buildStatusKey('pokemon', identifier)
+      const statusKey = buildStatusKey('pokemon', normalized)
       this.status[statusKey] = { ...createStatus(), isLoading: true }
       try {
-        const pokemon = await fetchPokemon(identifier)
+        const pokemon = await fetchPokemon(normalized)
         this.pokemonById[pokemon.id] = pokemon
         this.pokemonNameToId[pokemon.name.toLowerCase()] = pokemon.id
         this.status[statusKey] = {
@@ -109,18 +121,19 @@ export const usePokemonStore = defineStore('pokemon', {
       }
     },
     async ensureSpecies(identifier: number | string) {
+      const normalized = normalizeIdentifier(identifier)
       const key =
-        typeof identifier === 'number'
-          ? identifier
-          : Number(this.pokemonNameToId[identifier.toLowerCase()])
+        typeof normalized === 'number'
+          ? normalized
+          : this.pokemonNameToId[String(normalized).toLowerCase()]
       if (typeof key === 'number' && this.speciesById[key]) {
         return this.speciesById[key]
       }
 
-      const statusKey = buildStatusKey('species', identifier)
+      const statusKey = buildStatusKey('species', normalized)
       this.status[statusKey] = { ...createStatus(), isLoading: true }
       try {
-        const species = await fetchPokemonSpecies(identifier)
+        const species = await fetchPokemonSpecies(normalized)
         this.speciesById[species.id] = species
         this.status[statusKey] = {
           isLoading: false,
@@ -141,15 +154,16 @@ export const usePokemonStore = defineStore('pokemon', {
       }
     },
     async ensureType(identifier: number | string) {
-      const key = typeof identifier === 'number' ? String(identifier) : identifier.toLowerCase()
+      const normalized = normalizeIdentifier(identifier)
+      const key = typeof normalized === 'number' ? String(normalized) : normalized
       if (this.typesByName[key]) {
         return this.typesByName[key]
       }
 
-      const statusKey = buildStatusKey('type', identifier)
+      const statusKey = buildStatusKey('type', key)
       this.status[statusKey] = { ...createStatus(), isLoading: true }
       try {
-        const type = await fetchPokemonType(identifier)
+        const type = await fetchPokemonType(normalized)
         this.typesByName[type.name.toLowerCase()] = type
         this.status[statusKey] = {
           isLoading: false,
@@ -170,15 +184,16 @@ export const usePokemonStore = defineStore('pokemon', {
       }
     },
     async ensureEvolutionChain(identifier: number | string) {
-      const key = typeof identifier === 'number' ? identifier : Number(identifier)
+      const normalized = normalizeIdentifier(identifier)
+      const key = typeof normalized === 'number' ? normalized : Number(normalized)
       if (!Number.isNaN(key) && this.evolutionChainsById[key]) {
         return this.evolutionChainsById[key]
       }
 
-      const statusKey = buildStatusKey('evolution-chain', identifier)
+      const statusKey = buildStatusKey('evolution-chain', normalized)
       this.status[statusKey] = { ...createStatus(), isLoading: true }
       try {
-        const chain = await fetchEvolutionChain(identifier)
+        const chain = await fetchEvolutionChain(normalized)
         this.evolutionChainsById[chain.id] = chain
         this.status[statusKey] = {
           isLoading: false,

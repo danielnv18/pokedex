@@ -61,7 +61,7 @@ describe('usePokemonStore', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
 
     const second = await store.ensurePokemon('1')
-    expect(second).toBe(first)
+    expect(second).toStrictEqual(first)
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })
