@@ -165,6 +165,7 @@ export const usePokemonStore = defineStore('pokemon', {
       try {
         const type = await fetchPokemonType(normalized)
         this.typesByName[type.name.toLowerCase()] = type
+        this.typesByName[String(type.id)] = type
         this.status[statusKey] = {
           isLoading: false,
           hasError: false,

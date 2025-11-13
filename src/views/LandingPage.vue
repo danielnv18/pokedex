@@ -32,7 +32,9 @@ function extractPokemonId(resourceUrl: string) {
 }
 
 const hasError = computed(() => listStatus.value.hasError)
-const errorMessage = computed(() => listStatus.value.errorMessage ?? 'Something went wrong loading Pokémon.')
+const errorMessage = computed(
+  () => listStatus.value.errorMessage ?? 'Something went wrong loading Pokémon.',
+)
 
 function retryFetch() {
   return store.fetchPokemonList({ limit: FEATURED_LIMIT, offset: FEATURED_OFFSET })
@@ -45,7 +47,8 @@ function retryFetch() {
       <p class="eyebrow">Pokédex</p>
       <h1>Catch up with your favorite Pokémon.</h1>
       <p class="subhead">
-        Quickly preview a handful of featured Pokémon fetched from the PokéAPI, then hop into the full index to explore more.
+        Quickly preview a handful of featured Pokémon fetched from the PokéAPI, then hop into the
+        full index to explore more.
       </p>
       <RouterLink class="cta" to="/pokemon">Open Pokédex</RouterLink>
       <button class="refresh" @click="retryFetch" :disabled="listStatus.isLoading">
@@ -59,7 +62,10 @@ function retryFetch() {
 
       <ul v-else class="pokemon-grid" aria-live="polite">
         <li v-for="resource in featuredList?.results ?? []" :key="resource.name">
-          <PokemonCard :id="extractPokemonId(resource.url)" :name="formatPokemonName(resource.name)" />
+          <PokemonCard
+            :id="extractPokemonId(resource.url)"
+            :name="formatPokemonName(resource.name)"
+          />
         </li>
       </ul>
     </div>

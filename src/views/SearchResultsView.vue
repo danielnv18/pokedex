@@ -122,7 +122,9 @@ watch(
         <article v-else-if="results.pokemon.data" class="result-card">
           <p class="eyebrow">#{{ results.pokemon.data.id }}</p>
           <h3>{{ results.pokemon.data.name }}</h3>
-          <RouterLink :to="{ name: 'pokemon-detail', params: { identifier: results.pokemon.data.id } }">
+          <RouterLink
+            :to="{ name: 'pokemon-detail', params: { identifier: results.pokemon.data.id } }"
+          >
             View details
           </RouterLink>
         </article>

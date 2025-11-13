@@ -22,11 +22,9 @@ const heroImage = computed(() => {
     return { artwork: '', fallback: '' }
   }
   const artwork = getOfficialArtworkUrl(pokemon.value.id)
-  const fallback = (
-    pokemon.value.sprites.other?.['official-artwork']?.['front_default'] ??
+  const fallback = (pokemon.value.sprites.other?.['official-artwork']?.['front_default'] ??
     pokemon.value.sprites.front_default ??
-    getFallbackSpriteUrl(pokemon.value.id)
-  ) as string
+    getFallbackSpriteUrl(pokemon.value.id)) as string
   return { artwork, fallback }
 })
 
@@ -110,10 +108,16 @@ watch(() => identifier.value, loadPokemon)
           <p class="eyebrow">#{{ pokemon.id.toString().padStart(3, '0') }}</p>
           <h1>{{ pokemon.name }}</h1>
           <div class="type-chips">
-            <span v-for="type in pokemon.types" :key="type.slot" class="chip">{{ type.type.name }}</span>
+            <span v-for="type in pokemon.types" :key="type.slot" class="chip">{{
+              type.type.name
+            }}</span>
           </div>
           <p v-if="species?.flavor_text_entries?.length" class="flavor">
-            {{ species.flavor_text_entries.find((entry) => entry.language.name === 'en')?.flavor_text?.replace(/\f/g, ' ') }}
+            {{
+              species.flavor_text_entries
+                .find((entry) => entry.language.name === 'en')
+                ?.flavor_text?.replace(/\f/g, ' ')
+            }}
           </p>
         </div>
       </div>

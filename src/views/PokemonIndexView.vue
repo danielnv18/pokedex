@@ -47,7 +47,9 @@ const listCacheKey = computed(
   () => `list:limit:${pagination.value.limit}|offset:${pagination.value.offset}`,
 )
 
-const paginatedResponse = computed(() => pokemonStore.getListByKey(listCacheKey.value)?.results ?? null)
+const paginatedResponse = computed(
+  () => pokemonStore.getListByKey(listCacheKey.value)?.results ?? null,
+)
 const paginatedResources = computed(() => paginatedResponse.value?.results ?? [])
 const listStatus = computed(() => pokemonStore.getStatus(listCacheKey.value))
 
@@ -118,9 +120,7 @@ async function hydrateList() {
 
 function changePage(direction: 'next' | 'prev') {
   const { limit, offset } = pagination.value
-  const nextOffset = direction === 'next'
-    ? offset + limit
-    : Math.max(0, offset - limit)
+  const nextOffset = direction === 'next' ? offset + limit : Math.max(0, offset - limit)
   filtersStore.setPagination({ offset: nextOffset })
 }
 
@@ -175,25 +175,22 @@ watch(
   { immediate: true },
 )
 
-watch(
-  selectedGenerations,
-  (generations, previous) => {
-    if (!generations.length) {
-      if (previous?.length) {
-        filtersStore.setPagination({ offset: 0 })
-      }
-      return
+watch(selectedGenerations, (generations, previous) => {
+  if (!generations.length) {
+    if (previous?.length) {
+      filtersStore.setPagination({ offset: 0 })
     }
-    const range = GENERATION_RANGES[generations[0]]
-    if (!range) return
-    const desiredOffset = Math.max(0, range[0] - 1)
-    if (pagination.value.offset !== desiredOffset) {
-      filtersStore.setPagination({ offset: desiredOffset })
-    } else if (!paginatedResponse.value) {
-      hydrateList()
-    }
-  },
-)
+    return
+  }
+  const range = GENERATION_RANGES[generations[0]]
+  if (!range) return
+  const desiredOffset = Math.max(0, range[0] - 1)
+  if (pagination.value.offset !== desiredOffset) {
+    filtersStore.setPagination({ offset: desiredOffset })
+  } else if (!paginatedResponse.value) {
+    hydrateList()
+  }
+})
 
 watch(
   () => [pagination.value.limit, pagination.value.offset],
@@ -267,14 +264,19 @@ watch(
     <p v-else class="status">No Pokémon match that query.</p>
 
     <div class="pagination">
-      <button type="button" :disabled="pagination.offset === 0 || hasTypeFilter" @click="changePage('prev')">
+      <button
+        type="button"
+        :disabled="pagination.offset === 0 || hasTypeFilter"
+        @click="changePage('prev')"
+      >
         Previous
       </button>
       <span>{{ visibleRangeLabel }}</span>
       <button type="button" :disabled="hasTypeFilter" @click="changePage('next')">Next</button>
     </div>
     <p v-if="hasTypeFilter" class="pagination-note">
-      Pagination is disabled while filtering by type. Refine the filter or clear it to browse sequentially.
+      Pagination is disabled while filtering by type. Refine the filter or clear it to browse
+      sequentially.
     </p>
   </section>
 </template>

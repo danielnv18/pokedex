@@ -93,7 +93,9 @@ function handleImageError(event: Event) {
   text-decoration: none;
   color: inherit;
   position: relative;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .pokemon-card:hover {

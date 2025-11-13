@@ -46,11 +46,17 @@ function clearAll() {
       <button v-if="favoriteIds.length" class="clear" @click="clearAll">Clear all</button>
     </div>
 
-    <p v-if="!favoriteIds.length" class="status">No favorites yet. Tap the star on any Pokémon card to add it.</p>
+    <p v-if="!favoriteIds.length" class="status">
+      No favorites yet. Tap the star on any Pokémon card to add it.
+    </p>
 
     <ul v-else class="pokemon-grid">
       <li v-for="pokemon in favoritePokemon" :key="pokemon.id">
-        <PokemonCard :id="pokemon.id" :name="pokemon.name" :sprite-url="pokemon.sprites.front_default ?? undefined" />
+        <PokemonCard
+          :id="pokemon.id"
+          :name="pokemon.name"
+          :sprite-url="pokemon.sprites.front_default ?? undefined"
+        />
       </li>
     </ul>
   </section>
