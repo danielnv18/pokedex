@@ -4,10 +4,11 @@ Vue 3 + Vite application that turns the [PokéAPI v2](https://pokeapi.co/docs/v2
 
 ## Features
 
-- Vue Router-powered navigation between Pokémon detail views and list pages.
-- Pinia stores to cache PokéAPI responses and keep the UI reactive.
-- Reusable UI components for cards, stats, and filters.
-- First-class TypeScript support with `vue-tsc` and ESLint/Prettier automation.
+- Vue Router-powered navigation with dedicated routes for the landing page, Pokédex index, detail views, favorites, and global search.
+- Pokédex index view offering keyword search, type & generation filters, and pagination backed by live PokéAPI data.
+- Pokémon detail page that hydrates species + evolution chains and surfaces stats, types, and flavor text.
+- Search hub that queries Pokémon, moves, and items concurrently, plus a favorites/team view persisted to localStorage.
+- Pinia stores + reusable card components keep the UI reactive with cached API results, while TypeScript/ESLint/Prettier enforce consistency.
 
 ## Tech Stack
 
