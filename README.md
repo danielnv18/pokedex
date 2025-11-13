@@ -1,73 +1,62 @@
-# pokedex
+# Pokedex
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue 3 + Vite application that turns the [PokéAPI v2](https://pokeapi.co/docs/v2) into an interactive Pokédex. It focuses on fast client-side navigation, search, and filtering so you can quickly explore Pokémon data such as types, abilities, stats, and evolution chains.
 
-## Recommended IDE Setup
+## Features
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Vue Router-powered navigation between Pokémon detail views and list pages.
+- Pinia stores to cache PokéAPI responses and keep the UI reactive.
+- Reusable UI components for cards, stats, and filters.
+- First-class TypeScript support with `vue-tsc` and ESLint/Prettier automation.
 
-## Recommended Browser Setup
+## Tech Stack
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- [Vue 3](https://vuejs.org/) + [Vite](https://vite.dev/) for the SPA shell.
+- [Pinia](https://pinia.vuejs.org/) for state management.
+- [Vue Router](https://router.vuejs.org/) for client-side routing.
+- [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/) for automated tests.
 
-## Type Support for `.vue` Imports in TS
+## Getting Started
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### Prerequisites
 
-## Customize configuration
+- Node.js 20.19+ (or 22.12+)
+- [pnpm](https://pnpm.io/) 8+
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### Installation
 
-## Project Setup
-
-```sh
+```bash
 pnpm install
 ```
 
-### Compile and Hot-Reload for Development
+### Run the Development Server
 
-```sh
+```bash
 pnpm dev
 ```
 
-### Type-Check, Compile and Minify for Production
+The app will be served on the URL Vite prints to the console (defaults to `http://localhost:5173`).
 
-```sh
-pnpm build
+### Type Check, Build, and Preview
+
+```bash
+pnpm type-check   # optional: run before the build for faster feedback
+pnpm build        # output goes to dist/
+pnpm preview      # serve the production build locally
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Testing and Linting
 
-```sh
-pnpm test:unit
+```bash
+pnpm lint         # ESLint + Prettier formatting
+pnpm test:unit    # Vitest unit suite
+pnpm test:e2e     # Playwright end-to-end tests (run `npx playwright install` once)
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+## PokéAPI Usage
 
-```sh
-# Install browsers for the first run
-npx playwright install
+All Pokémon data is fetched from the public [PokéAPI v2](https://pokeapi.co/docs/v2). Make sure to respect their rate limits when building new features or running automated tests.
 
-# When testing on CI, must build the project first
-pnpm build
+## License
 
-# Runs the end-to-end tests
-pnpm test:e2e
-# Runs the tests only on Chromium
-pnpm test:e2e --project=chromium
-# Runs the tests of a specific file
-pnpm test:e2e tests/example.spec.ts
-# Runs the tests in debug mode
-pnpm test:e2e --debug
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm lint
-```
+Distributed under the [MIT License](./LICENSE).
