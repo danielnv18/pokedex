@@ -1,6 +1,9 @@
 import type {
+  Ability,
   EvolutionChain,
   Item,
+  Location,
+  LocationArea,
   Move,
   Pokemon,
   PokemonEncounterArea,
@@ -85,6 +88,10 @@ export function fetchEvolutionChain(identifier: number | string): Promise<Evolut
   return request<EvolutionChain>(`/evolution-chain/${identifier}`)
 }
 
+export function fetchAbility(identifier: number | string): Promise<Ability> {
+  return request<Ability>(`/ability/${identifier}`)
+}
+
 export function fetchMove(identifier: number | string): Promise<Move> {
   return request<Move>(`/move/${identifier}`)
 }
@@ -93,7 +100,9 @@ export function fetchItem(identifier: number | string): Promise<Item> {
   return request<Item>(`/item/${identifier}`)
 }
 
-export function fetchPokemonEncounters(identifier: number | string): Promise<PokemonEncounterArea[]> {
+export function fetchPokemonEncounters(
+  identifier: number | string,
+): Promise<PokemonEncounterArea[]> {
   if (typeof identifier === 'string' && identifier.startsWith('http')) {
     return request<PokemonEncounterArea[]>(identifier)
   }
@@ -119,4 +128,38 @@ export function fetchPokemonList(params: { limit?: number; offset?: number } = {
   const query = search.toString()
   const path = query ? `/pokemon?${query}` : '/pokemon'
   return request<PaginatedResult<{ name: string; url: string }>>(path)
+}
+
+export function fetchMoveList(params: { limit?: number; offset?: number } = {}) {
+  const search = new URLSearchParams()
+  if (typeof params.limit === 'number') {
+    search.set('limit', String(params.limit))
+  }
+  if (typeof params.offset === 'number') {
+    search.set('offset', String(params.offset))
+  }
+  const query = search.toString()
+  const path = query ? `/move?${query}` : '/move'
+  return request<PaginatedResult<{ name: string; url: string }>>(path)
+}
+
+export function fetchLocationList(params: { limit?: number; offset?: number } = {}) {
+  const search = new URLSearchParams()
+  if (typeof params.limit === 'number') {
+    search.set('limit', String(params.limit))
+  }
+  if (typeof params.offset === 'number') {
+    search.set('offset', String(params.offset))
+  }
+  const query = search.toString()
+  const path = query ? `/location?${query}` : '/location'
+  return request<PaginatedResult<{ name: string; url: string }>>(path)
+}
+
+export function fetchLocation(identifier: number | string): Promise<Location> {
+  return request<Location>(`/location/${identifier}`)
+}
+
+export function fetchLocationArea(identifier: number | string): Promise<LocationArea> {
+  return request<LocationArea>(`/location-area/${identifier}`)
 }

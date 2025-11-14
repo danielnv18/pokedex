@@ -2,15 +2,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
-import { fetchPokemonEncounters } from '@/lib/api-client'
 import { cacheSpriteAsset, getFallbackSpriteUrl, getOfficialArtworkUrl } from '@/lib/media'
 import { usePokemonStore } from '@/stores/pokemon'
-import type {
-  EvolutionChain,
-  Pokemon,
-  PokemonEncounterArea,
-  PokemonSpecies,
-} from '@/lib/types'
+import type { EvolutionChain, Pokemon, PokemonEncounterArea, PokemonSpecies } from '@/lib/types'
 
 const route = useRoute()
 const pokemonStore = usePokemonStore()
@@ -73,7 +67,10 @@ const infoMetrics = computed(() => {
   return [
     { label: 'Height', value: `${heightMeters} m` },
     { label: 'Weight', value: `${weightKg} kg` },
-    { label: 'Habitat', value: species.value.habitat ? formatLabel(species.value.habitat.name) : 'Unknown' },
+    {
+      label: 'Habitat',
+      value: species.value.habitat ? formatLabel(species.value.habitat.name) : 'Unknown',
+    },
     { label: 'Generation', value: formatLabel(species.value.generation.name) },
   ]
 })
@@ -93,9 +90,7 @@ const levelUpMoves = computed(() => {
       })
     }
   })
-  return rows
-    .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
-    .slice(0, 12)
+  return rows.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)).slice(0, 12)
 })
 
 const encounterHighlights = computed(() => {
@@ -134,14 +129,14 @@ async function hydrateEncounters() {
     encounters.value = []
     return
   }
-  if (!pokemon.value.location_area_encounters) {
-    encounters.value = []
-    return
-  }
   encounterLoading.value = true
   encounterError.value = null
   try {
-    encounters.value = await fetchPokemonEncounters(pokemon.value.location_area_encounters)
+    const results = await pokemonStore.ensurePokemonEncounters(
+      pokemon.value.id,
+      pokemon.value.location_area_encounters,
+    )
+    encounters.value = results
   } catch (error) {
     encounterError.value = error instanceof Error ? error.message : 'Failed to load encounters'
     encounters.value = []
@@ -232,13 +227,14 @@ watch(
               @error="handleHeroError"
             />
             <div class="flex flex-wrap items-center justify-center gap-2">
-              <span
+              <RouterLink
                 v-for="type in pokemon.types"
                 :key="type.slot"
-                class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold capitalize text-slate-700"
+                class="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-semibold capitalize text-slate-700 transition hover:border-sky-300"
+                :to="{ name: 'type-detail', params: { identifier: type.type.name } }"
               >
                 {{ type.type.name }}
-              </span>
+              </RouterLink>
             </div>
           </div>
           <div class="space-y-4">
@@ -252,9 +248,13 @@ watch(
             <p v-if="flavorText" class="text-lg text-slate-600">
               {{ flavorText }}
             </p>
-            <dl class="grid gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 sm:grid-cols-2">
+            <dl
+              class="grid gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 sm:grid-cols-2"
+            >
               <div v-for="metric in infoMetrics" :key="metric.label" class="space-y-1">
-                <dt class="text-xs uppercase tracking-[0.35em] text-slate-500">{{ metric.label }}</dt>
+                <dt class="text-xs uppercase tracking-[0.35em] text-slate-500">
+                  {{ metric.label }}
+                </dt>
                 <dd class="text-lg font-semibold text-slate-900">
                   {{ metric.value }}
                 </dd>
@@ -293,7 +293,12 @@ watch(
               :key="ability.ability.name"
               class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 capitalize"
             >
-              {{ formatLabel(ability.ability.name) }}
+              <RouterLink
+                class="font-semibold text-slate-800 transition hover:text-sky-600"
+                :to="{ name: 'ability-detail', params: { identifier: ability.ability.name } }"
+              >
+                {{ formatLabel(ability.ability.name) }}
+              </RouterLink>
               <span
                 v-if="ability.is_hidden"
                 class="rounded-full bg-slate-200 px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-600"
@@ -330,7 +335,10 @@ watch(
           <div v-if="!levelUpMoves.length" class="mt-6 text-sm text-slate-500">
             No level-up moves available for this Pokémon.
           </div>
-          <table v-else class="mt-4 w-full table-fixed text-left text-sm lg:max-w-xl lg:self-center">
+          <table
+            v-else
+            class="mt-4 w-full table-fixed text-left text-sm lg:max-w-xl lg:self-center"
+          >
             <thead class="text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th class="pb-2">Move</th>

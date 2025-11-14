@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { usePokemonStore } from '@/stores/pokemon'
-import type { Pokemon, PokemonSpecies, PokemonType } from '@/lib/types'
+import type { Pokemon, PokemonEncounterArea, PokemonSpecies, PokemonType } from '@/lib/types'
 
 const SAMPLE_POKEMON: Pokemon = {
   id: 1,
@@ -94,6 +94,9 @@ describe('usePokemonStore', () => {
   function createFetchMock() {
     return vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.url
+      if (url.includes('/encounters')) {
+        return okResponse(SAMPLE_ENCOUNTERS)
+      }
       if (url.includes('/pokemon-species/')) {
         return okResponse(SAMPLE_SPECIES)
       }
@@ -152,4 +155,26 @@ describe('usePokemonStore', () => {
     expect(second).toStrictEqual(first)
     expect(fetchMock.mock.calls.length).toBe(callsAfterFirst)
   })
+
+  it('caches encounters per Pokémon id', async () => {
+    const store = usePokemonStore()
+    await store.ensurePokemon(1)
+
+    const fetchMock = vi.mocked(fetch)
+    const callsBefore = fetchMock.mock.calls.length
+
+    const first = await store.ensurePokemonEncounters(1, '/api/v2/pokemon/1/encounters')
+    expect(first).toStrictEqual(SAMPLE_ENCOUNTERS)
+    expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+
+    const second = await store.ensurePokemonEncounters(1, '/api/v2/pokemon/1/encounters')
+    expect(second).toStrictEqual(first)
+    expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+  })
 })
+const SAMPLE_ENCOUNTERS: PokemonEncounterArea[] = [
+  {
+    location_area: { name: 'test-area', url: '/location-area/1' },
+    version_details: [],
+  },
+]

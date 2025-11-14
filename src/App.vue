@@ -31,6 +31,20 @@ import { RouterLink, RouterView } from 'vue-router'
             Search
           </RouterLink>
           <RouterLink
+            to="/moves"
+            class="rounded-full px-3 py-1 transition hover:text-slate-900"
+            active-class="text-slate-900 bg-slate-100"
+          >
+            Moves
+          </RouterLink>
+          <RouterLink
+            to="/locations"
+            class="rounded-full px-3 py-1 transition hover:text-slate-900"
+            active-class="text-slate-900 bg-slate-100"
+          >
+            Locations
+          </RouterLink>
+          <RouterLink
             to="/favorites"
             class="rounded-full px-3 py-1 transition hover:text-slate-900"
             active-class="text-slate-900 bg-slate-100"

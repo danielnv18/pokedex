@@ -213,6 +213,13 @@ export interface Move {
     short_effect: string
     language: NamedApiResource
   }>
+  contest_type?: NamedApiResource | null
+  contest_effect?: NamedApiResource | null
+  flavor_text_entries?: Array<{
+    flavor_text: string
+    language: NamedApiResource
+    version_group: NamedApiResource
+  }>
 }
 
 export interface Item {
@@ -249,6 +256,64 @@ export interface PokemonEncounterVersionDetail {
 export interface PokemonEncounterArea {
   location_area: NamedApiResource
   version_details: PokemonEncounterVersionDetail[]
+}
+
+export interface Ability {
+  id: number
+  name: string
+  generation: NamedApiResource
+  effect_entries: Array<{
+    effect: string
+    short_effect: string
+    language: NamedApiResource
+  }>
+  flavor_text_entries: Array<{
+    flavor_text: string
+    language: NamedApiResource
+    version_group: NamedApiResource
+  }>
+  pokemon: Array<{
+    is_hidden: boolean
+    slot: number
+    pokemon: NamedApiResource
+  }>
+}
+
+export interface Location {
+  id: number
+  name: string
+  region: NamedApiResource | null
+  areas: NamedApiResource[]
+  game_indices: Array<{
+    game_index: number
+    generation: NamedApiResource
+  }>
+}
+
+export interface LocationArea {
+  id: number
+  name: string
+  encounter_method_rates: Array<{
+    encounter_method: NamedApiResource
+    version_details: Array<{
+      rate: number
+      version: NamedApiResource
+    }>
+  }>
+  pokemon_encounters: Array<{
+    pokemon: NamedApiResource
+    version_details: Array<{
+      max_chance: number
+      version: NamedApiResource
+      encounter_details: Array<{
+        chance: number
+        method: NamedApiResource
+        min_level: number
+        max_level: number
+        condition_values: NamedApiResource[]
+      }>
+    }>
+  }>
 }
 
 export interface EvolutionDetail {

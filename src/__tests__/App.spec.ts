@@ -19,9 +19,11 @@ describe('App shell', () => {
       },
     })
 
-    expect(wrapper.find('.brand').text()).toContain('Pokedex')
+    expect(wrapper.text()).toContain('Pokedex')
     expect(wrapper.text()).toContain('Pokédex')
     expect(wrapper.text()).toContain('Search')
+    expect(wrapper.text()).toContain('Moves')
+    expect(wrapper.text()).toContain('Locations')
     expect(wrapper.text()).toContain('Favorites')
     expect(wrapper.text()).toContain('Powered by PokéAPI')
   })

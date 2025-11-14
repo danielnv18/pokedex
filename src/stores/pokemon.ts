@@ -4,6 +4,7 @@ import type {
   EvolutionChain,
   FetchStatusMeta,
   Pokemon,
+  PokemonEncounterArea,
   PokemonSpecies,
   PokemonType,
 } from '@/lib/types'
@@ -13,6 +14,7 @@ import {
   fetchPokemon,
   fetchPokemonList,
   fetchPokemonSpecies,
+  fetchPokemonEncounters,
   fetchPokemonType,
   type PaginatedResult,
 } from '@/lib/api-client'
@@ -28,6 +30,7 @@ interface PokemonStoreState {
   speciesById: Record<number, PokemonSpecies>
   typesByName: Record<string, PokemonType>
   evolutionChainsById: Record<number, EvolutionChain>
+  encountersByPokemonId: Record<number, PokemonEncounterArea[]>
   lists: Record<string, PokemonListState>
   status: Record<string, FetchStatusMeta>
 }
@@ -70,6 +73,7 @@ export const usePokemonStore = defineStore('pokemon', {
     speciesById: {},
     typesByName: {},
     evolutionChainsById: {},
+    encountersByPokemonId: {},
     lists: {},
     status: {},
   }),
@@ -82,6 +86,7 @@ export const usePokemonStore = defineStore('pokemon', {
     getSpeciesById: (state) => (id: number) => state.speciesById[id] ?? null,
     getTypeByName: (state) => (name: string) => state.typesByName[name.toLowerCase()] ?? null,
     getEvolutionChainById: (state) => (id: number) => state.evolutionChainsById[id] ?? null,
+    getEncountersByPokemonId: (state) => (id: number) => state.encountersByPokemonId[id] ?? null,
     getListByKey: (state) => (key: string) => state.lists[key] ?? null,
     getStatus: (state) => (key: string) => state.status[key] ?? createStatus(),
   },
@@ -205,6 +210,48 @@ export const usePokemonStore = defineStore('pokemon', {
         return chain
       } catch (error) {
         const message = error instanceof ApiError ? error.message : 'Failed to load evolution chain'
+        this.status[statusKey] = {
+          isLoading: false,
+          hasError: true,
+          errorMessage: message,
+          updatedAt: Date.now(),
+        }
+        throw error
+      }
+    },
+    async ensurePokemonEncounters(identifier: number | string, endpoint?: string) {
+      const normalized = normalizeIdentifier(identifier)
+      let resolvedId: number | null =
+        typeof normalized === 'number'
+          ? normalized
+          : (this.pokemonNameToId[String(normalized).toLowerCase()] ?? null)
+      if (resolvedId === null) {
+        const pokemon = await this.ensurePokemon(normalized)
+        resolvedId = pokemon.id
+      }
+      if (typeof resolvedId !== 'number') {
+        throw new Error('Unable to resolve Pokémon id for encounters')
+      }
+      const cached = this.encountersByPokemonId[resolvedId]
+      if (cached) {
+        return cached
+      }
+
+      const statusKey = buildStatusKey('encounters', resolvedId)
+      this.status[statusKey] = { ...createStatus(), isLoading: true }
+      try {
+        const target = endpoint ?? resolvedId
+        const encounters = await fetchPokemonEncounters(target)
+        this.encountersByPokemonId[resolvedId] = encounters
+        this.status[statusKey] = {
+          isLoading: false,
+          hasError: false,
+          errorMessage: null,
+          updatedAt: Date.now(),
+        }
+        return encounters
+      } catch (error) {
+        const message = error instanceof ApiError ? error.message : 'Failed to load encounter data'
         this.status[statusKey] = {
           isLoading: false,
           hasError: true,

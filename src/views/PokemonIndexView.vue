@@ -213,10 +213,10 @@ watch(
       class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Pokémon Index</p>
-        <h1 class="mt-3 text-3xl font-semibold text-slate-900">
-          Browse every Pokémon
-        </h1>
+        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+          Pokémon Index
+        </p>
+        <h1 class="mt-3 text-3xl font-semibold text-slate-900">Browse every Pokémon</h1>
         <p class="mt-2 text-sm text-slate-600">
           Search, filter by type, and page through the full Pokédex pulled live from PokéAPI.
         </p>
@@ -271,7 +271,9 @@ watch(
       </div>
     </div>
 
-    <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-center text-sm">
+    <div
+      class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-center text-sm"
+    >
       <p v-if="listStatus.isLoading" class="text-slate-600">Loading Pokémon…</p>
       <p v-else-if="listStatus.hasError" class="font-semibold text-red-500">
         {{ listStatus.errorMessage }}
