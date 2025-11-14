@@ -199,6 +199,58 @@ export interface PokemonType {
   moves: NamedApiResource[]
 }
 
+export interface Move {
+  id: number
+  name: string
+  accuracy: number | null
+  power: number | null
+  pp: number | null
+  priority: number
+  type: NamedApiResource
+  damage_class: NamedApiResource
+  effect_entries: Array<{
+    effect: string
+    short_effect: string
+    language: NamedApiResource
+  }>
+}
+
+export interface Item {
+  id: number
+  name: string
+  cost: number
+  sprites: {
+    default: string | null
+  }
+  effect_entries: Array<{
+    effect: string
+    short_effect: string
+    language: NamedApiResource
+  }>
+}
+
+export interface PokemonEncounterMethodRate {
+  chance: number
+  method: NamedApiResource
+}
+
+export interface PokemonEncounterVersionDetail {
+  max_chance: number
+  encounter_details: Array<{
+    chance: number
+    condition_values: NamedApiResource[]
+    max_level: number
+    min_level: number
+    method: NamedApiResource
+  }>
+  version: NamedApiResource
+}
+
+export interface PokemonEncounterArea {
+  location_area: NamedApiResource
+  version_details: PokemonEncounterVersionDetail[]
+}
+
 export interface EvolutionDetail {
   item: NamedApiResource | null
   trigger: NamedApiResource

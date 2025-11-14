@@ -42,25 +42,47 @@ function retryFetch() {
 </script>
 
 <template>
-  <section class="landing">
-    <div class="landing__hero">
-      <p class="eyebrow">Pokédex</p>
-      <h1>Catch up with your favorite Pokémon.</h1>
-      <p class="subhead">
-        Quickly preview a handful of featured Pokémon fetched from the PokéAPI, then hop into the
-        full index to explore more.
+  <section class="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 sm:px-6 lg:px-10">
+    <div class="text-center">
+      <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Pokédex</p>
+      <h1 class="mt-4 text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
+        Catch up with your favorite Pokémon.
+      </h1>
+      <p class="mx-auto mt-4 max-w-3xl text-base text-slate-600">
+        Quickly preview a handful of featured Pokémon fetched from PokéAPI, then hop into the full
+        index to explore more companions by type, generation, and stats.
       </p>
-      <RouterLink class="cta" to="/pokemon">Open Pokédex</RouterLink>
-      <button class="refresh" @click="retryFetch" :disabled="listStatus.isLoading">
-        {{ listStatus.isLoading ? 'Loading…' : 'Refresh list' }}
-      </button>
+      <div class="mt-6 flex flex-wrap justify-center gap-3">
+        <RouterLink
+          class="inline-flex items-center justify-center rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600"
+          to="/pokemon"
+        >
+          Open Pokédex
+        </RouterLink>
+        <button
+          class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-progress disabled:opacity-60"
+          @click="retryFetch"
+          :disabled="listStatus.isLoading"
+        >
+          {{ listStatus.isLoading ? 'Loading…' : 'Refresh list' }}
+        </button>
+      </div>
     </div>
 
-    <div class="landing__grid">
-      <p v-if="listStatus.isLoading && !featuredList" class="status">Loading featured Pokémon…</p>
-      <p v-else-if="hasError" class="status status--error">{{ errorMessage }}</p>
+    <div class="min-h-[240px]">
+      <p v-if="listStatus.isLoading && !featuredList" class="text-center text-slate-500">
+        Loading featured Pokémon…
+      </p>
+      <p v-else-if="hasError" class="text-center font-medium text-red-500">
+        {{ errorMessage }}
+      </p>
 
-      <ul v-else class="pokemon-grid" aria-live="polite">
+      <ul
+        v-else
+        class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        aria-live="polite"
+        aria-busy="false"
+      >
         <li v-for="resource in featuredList?.results ?? []" :key="resource.name">
           <PokemonCard
             :id="extractPokemonId(resource.url)"
@@ -71,87 +93,3 @@ function retryFetch() {
     </div>
   </section>
 </template>
-
-<style scoped>
-.landing {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  padding: 3rem 1.5rem 4rem;
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-.landing__hero {
-  text-align: center;
-}
-
-.eyebrow {
-  font-size: 0.875rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
-  color: #64748b;
-}
-
-h1 {
-  font-size: clamp(2.25rem, 6vw, 3rem);
-  margin-bottom: 0.75rem;
-  color: #0f172a;
-}
-
-.subhead {
-  color: #475569;
-  margin-bottom: 1.5rem;
-  max-width: 40rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.cta,
-.refresh {
-  padding: 0.75rem 1.5rem;
-  border-radius: 999px;
-  border: none;
-  background: #2563eb;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  margin-right: 0.5rem;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.refresh {
-  background: #0f172a;
-}
-
-.refresh:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
-.landing__grid {
-  min-height: 240px;
-}
-
-.status {
-  text-align: center;
-  color: #475569;
-}
-
-.status--error {
-  color: #dc2626;
-}
-
-.pokemon-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-</style>

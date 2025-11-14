@@ -3,84 +3,48 @@ import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
-  <div class="app-shell">
-    <header class="app-header">
-      <RouterLink class="brand" to="/">
-        <span class="brand__dot" aria-hidden="true"></span>
-        Pokedex
-      </RouterLink>
-      <nav class="app-nav">
-        <RouterLink to="/pokemon">Pokédex</RouterLink>
-        <RouterLink to="/search">Search</RouterLink>
-        <RouterLink to="/favorites">Favorites</RouterLink>
-      </nav>
+  <div class="flex min-h-dvh flex-col bg-slate-50">
+    <header
+      class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-10"
+    >
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-6">
+        <RouterLink class="inline-flex items-center gap-3 text-lg font-semibold" to="/">
+          <span
+            aria-hidden="true"
+            class="h-3 w-3 rounded-full bg-red-500 shadow-[0_0_0_6px_rgba(239,68,68,0.25)]"
+          ></span>
+          Pokedex
+        </RouterLink>
+        <nav class="flex items-center gap-3 text-sm font-medium text-slate-500">
+          <RouterLink
+            to="/pokemon"
+            class="rounded-full px-3 py-1 transition hover:text-slate-900"
+            active-class="text-slate-900 bg-slate-100"
+          >
+            Pokédex
+          </RouterLink>
+          <RouterLink
+            to="/search"
+            class="rounded-full px-3 py-1 transition hover:text-slate-900"
+            active-class="text-slate-900 bg-slate-100"
+          >
+            Search
+          </RouterLink>
+          <RouterLink
+            to="/favorites"
+            class="rounded-full px-3 py-1 transition hover:text-slate-900"
+            active-class="text-slate-900 bg-slate-100"
+          >
+            Favorites
+          </RouterLink>
+        </nav>
+      </div>
     </header>
-    <main class="app-main">
+    <main class="flex-1">
       <RouterView />
     </main>
-    <footer class="app-footer">Powered by PokéAPI</footer>
+    <footer class="border-t border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
+      Powered by PokéAPI
+    </footer>
   </div>
 </template>
-
-<style scoped>
-.app-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 30%);
-}
-
-.app-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.brand {
-  font-weight: 700;
-  font-size: 1.125rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: #0f172a;
-}
-
-.brand__dot {
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
-}
-
-.app-nav {
-  display: flex;
-  gap: 1rem;
-}
-
-.app-nav a {
-  text-decoration: none;
-  color: #475569;
-  font-weight: 500;
-}
-
-.app-nav a.router-link-active {
-  color: #2563eb;
-}
-
-.app-main {
-  flex: 1;
-}
-
-.app-footer {
-  text-align: center;
-  padding: 1rem;
-  border-top: 1px solid #e2e8f0;
-  color: #94a3b8;
-  font-size: 0.875rem;
-}
-</style>

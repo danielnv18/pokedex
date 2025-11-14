@@ -51,10 +51,13 @@ function handleImageError(event: Event) {
 </script>
 
 <template>
-  <RouterLink class="pokemon-card" :to="{ name: 'pokemon-detail', params: { identifier: id } }">
-    <div class="pokemon-card__media">
+  <RouterLink
+    class="group relative flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/90 p-4 text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl"
+    :to="{ name: 'pokemon-detail', params: { identifier: id } }"
+  >
+    <div class="flex items-center justify-center">
       <img
-        class="pokemon-card__image"
+        class="h-32 w-32 object-contain transition group-hover:scale-105"
         :src="spriteSources.artwork || spriteSources.fallback"
         :alt="`${formattedName} artwork`"
         width="128"
@@ -65,101 +68,24 @@ function handleImageError(event: Event) {
         sizes="(max-width: 768px) 40vw, 180px"
         @error="handleImageError"
       />
-      <button class="favorite" :aria-pressed="isFavorite" @click="toggleFavorite">
+      <button
+        class="absolute right-2 top-2 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-xl shadow-sm transition hover:scale-105"
+        :aria-pressed="isFavorite"
+        @click="toggleFavorite"
+      >
         <span v-if="isFavorite" aria-hidden="true">★</span>
         <span v-else aria-hidden="true">☆</span>
         <span class="sr-only">Toggle favorite</span>
       </button>
     </div>
-    <div class="pokemon-card__body">
-      <p class="pokemon-card__id">#{{ id.toString().padStart(3, '0') }}</p>
-      <h3>{{ formattedName }}</h3>
-      <p v-if="description" class="pokemon-card__desc">
+    <div class="text-center">
+      <p class="text-xs uppercase tracking-[0.35em] text-slate-500">
+        #{{ id.toString().padStart(3, '0') }}
+      </p>
+      <h3 class="mt-2 text-xl font-semibold capitalize">{{ formattedName }}</h3>
+      <p v-if="description" class="mt-1 text-sm text-slate-500">
         {{ description }}
       </p>
     </div>
   </RouterLink>
 </template>
-
-<style scoped>
-.pokemon-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  padding: 1rem;
-  background: #fff;
-  text-decoration: none;
-  color: inherit;
-  position: relative;
-  transition:
-    transform 150ms ease,
-    box-shadow 150ms ease;
-}
-
-.pokemon-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
-}
-
-.pokemon-card__media {
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-
-.pokemon-card__image {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-
-.favorite {
-  position: absolute;
-  right: 0.25rem;
-  top: 0.25rem;
-  border: none;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 999px;
-  width: 2.25rem;
-  height: 2.25rem;
-  display: grid;
-  place-items: center;
-  font-size: 1.25rem;
-  cursor: pointer;
-}
-
-.pokemon-card__body {
-  text-align: center;
-}
-
-.pokemon-card__id {
-  font-size: 0.85rem;
-  letter-spacing: 0.1em;
-  color: #94a3b8;
-}
-
-h3 {
-  margin: 0.25rem 0;
-  text-transform: capitalize;
-  font-size: 1.1rem;
-  color: #0f172a;
-}
-
-.pokemon-card__desc {
-  font-size: 0.9rem;
-  color: #475569;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-</style>

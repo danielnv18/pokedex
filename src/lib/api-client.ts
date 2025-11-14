@@ -1,4 +1,12 @@
-import type { EvolutionChain, Pokemon, PokemonSpecies, PokemonType } from '@/lib/types'
+import type {
+  EvolutionChain,
+  Item,
+  Move,
+  Pokemon,
+  PokemonEncounterArea,
+  PokemonSpecies,
+  PokemonType,
+} from '@/lib/types'
 
 const BASE_URL = 'https://pokeapi.co/api/v2'
 
@@ -75,6 +83,21 @@ export function fetchPokemonType(identifier: number | string): Promise<PokemonTy
 
 export function fetchEvolutionChain(identifier: number | string): Promise<EvolutionChain> {
   return request<EvolutionChain>(`/evolution-chain/${identifier}`)
+}
+
+export function fetchMove(identifier: number | string): Promise<Move> {
+  return request<Move>(`/move/${identifier}`)
+}
+
+export function fetchItem(identifier: number | string): Promise<Item> {
+  return request<Item>(`/item/${identifier}`)
+}
+
+export function fetchPokemonEncounters(identifier: number | string): Promise<PokemonEncounterArea[]> {
+  if (typeof identifier === 'string' && identifier.startsWith('http')) {
+    return request<PokemonEncounterArea[]>(identifier)
+  }
+  return request<PokemonEncounterArea[]>(`/pokemon/${identifier}/encounters`)
 }
 
 export interface PaginatedResult<TItem> {

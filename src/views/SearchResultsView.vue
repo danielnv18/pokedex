@@ -2,31 +2,25 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
-import { fetchPokemon } from '@/lib/api-client'
-import type { Pokemon } from '@/lib/types'
+import { fetchItem, fetchMove } from '@/lib/api-client'
+import type { Item, Move, Pokemon } from '@/lib/types'
+import { usePokemonStore } from '@/stores/pokemon'
 
 const route = useRoute()
 const router = useRouter()
+const pokemonStore = usePokemonStore()
 
-interface MoveResult {
-  id: number
-  name: string
-  power: number | null
-  accuracy: number | null
-}
-
-interface ItemResult {
-  id: number
-  name: string
-  cost: number | null
-  sprites?: { default: string | null }
+interface ResourceState<T> {
+  data: T | null
+  error: string | null
+  loading: boolean
 }
 
 const query = ref<string>((route.query.q as string) ?? '')
 const results = reactive<{
-  pokemon: { data: Pokemon | null; error: string | null; loading: boolean }
-  move: { data: MoveResult | null; error: string | null; loading: boolean }
-  item: { data: ItemResult | null; error: string | null; loading: boolean }
+  pokemon: ResourceState<Pokemon>
+  move: ResourceState<Move>
+  item: ResourceState<Item>
 }>({
   pokemon: { data: null, error: null, loading: false },
   move: { data: null, error: null, loading: false },
@@ -35,16 +29,23 @@ const results = reactive<{
 
 const hasQuery = computed(() => Boolean(query.value.trim()))
 
-async function runSearch(term: string) {
-  if (!term.trim()) {
+async function runSearch(term: string, options: { syncRoute?: boolean } = {}) {
+  const { syncRoute = true } = options
+  const trimmed = term.trim().toLowerCase()
+  if (!trimmed) {
     clearResults()
+    if (syncRoute) {
+      await router.replace({ query: {} })
+    }
     return
   }
-  await router.replace({ query: { q: term } })
+  if (syncRoute) {
+    await router.replace({ query: { q: trimmed } })
+  }
   await Promise.all([
-    searchResource('pokemon', term),
-    searchResource('move', term),
-    searchResource('item', term),
+    searchResource('pokemon', trimmed),
+    searchResource('move', trimmed),
+    searchResource('item', trimmed),
   ])
 }
 
@@ -55,13 +56,11 @@ async function searchResource(resource: 'pokemon' | 'move' | 'item', term: strin
   target.data = null
   try {
     if (resource === 'pokemon') {
-      target.data = await fetchPokemon(term.toLowerCase())
+      target.data = await pokemonStore.ensurePokemon(term)
+    } else if (resource === 'move') {
+      target.data = await fetchMove(term)
     } else {
-      const response = await fetch(`https://pokeapi.co/api/v2/${resource}/${term.toLowerCase()}`)
-      if (!response.ok) {
-        throw new Error('Not found')
-      }
-      target.data = (await response.json()) as MoveResult | ItemResult
+      target.data = await fetchItem(term)
     }
   } catch (error) {
     target.error = error instanceof Error ? error.message : 'Not found'
@@ -71,8 +70,7 @@ async function searchResource(resource: 'pokemon' | 'move' | 'item', term: strin
 }
 
 function clearResults() {
-  Object.keys(results).forEach((key) => {
-    const resource = key as 'pokemon' | 'move' | 'item'
+  ;(['pokemon', 'move', 'item'] as const).forEach((resource) => {
     results[resource].data = null
     results[resource].error = null
     results[resource].loading = false
@@ -89,8 +87,9 @@ watch(
   (value) => {
     if (typeof value === 'string' && value.trim()) {
       query.value = value
-      runSearch(value)
+      runSearch(value, { syncRoute: false })
     } else {
+      query.value = ''
       clearResults()
     }
   },
@@ -99,126 +98,144 @@ watch(
 </script>
 
 <template>
-  <section class="search-view">
-    <form class="search-form" @submit="submit">
-      <label for="search-query">Search the Pokédex</label>
-      <div class="search-input">
-        <input
-          id="search-query"
-          v-model="query"
-          type="search"
-          placeholder="Try pikachu, thunderbolt, potion"
-        />
-        <button type="submit">Search</button>
-      </div>
+  <section class="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-10">
+    <form class="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm" @submit="submit">
+      <label class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <span class="text-sm font-medium text-slate-600">Search the Pokédex</span>
+        <div class="flex flex-1 flex-col gap-3 sm:flex-row">
+          <input
+            id="search-query"
+            v-model="query"
+            type="search"
+            placeholder="Try pikachu, thunderbolt, potion"
+            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-base shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+          />
+          <button
+            type="submit"
+            class="w-full rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 sm:w-auto"
+          >
+            Search
+          </button>
+        </div>
+      </label>
     </form>
 
-    <div v-if="!hasQuery" class="status">Enter a query to search Pokémon, moves, and items.</div>
+    <div
+      v-if="!hasQuery"
+      class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-slate-500"
+    >
+      Enter a query to search Pokémon, moves, and items.
+    </div>
 
-    <div v-else class="results-grid">
-      <section>
-        <h2>Pokémon</h2>
-        <div v-if="results.pokemon.loading" class="status">Searching…</div>
-        <article v-else-if="results.pokemon.data" class="result-card">
-          <p class="eyebrow">#{{ results.pokemon.data.id }}</p>
-          <h3>{{ results.pokemon.data.name }}</h3>
+    <div v-else class="grid gap-6 md:grid-cols-3">
+      <section class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-semibold text-slate-900">Pokémon</h2>
+          <span class="text-xs uppercase tracking-[0.2em] text-slate-500">/pokemon</span>
+        </div>
+        <div v-if="results.pokemon.loading" class="mt-6 text-sm text-slate-500">Searching…</div>
+        <article
+          v-else-if="results.pokemon.data"
+          class="mt-4 space-y-3 rounded-2xl border border-slate-200 bg-white/90 p-4"
+        >
+          <p class="text-xs uppercase tracking-[0.4em] text-slate-500">
+            #{{ results.pokemon.data.id.toString().padStart(3, '0') }}
+          </p>
+          <h3 class="text-2xl font-semibold capitalize">{{ results.pokemon.data.name }}</h3>
+          <div class="flex flex-wrap gap-2 text-sm">
+            <span
+              v-for="type in results.pokemon.data.types"
+              :key="type.slot"
+              class="rounded-full bg-slate-100 px-3 py-1 font-medium capitalize text-slate-700"
+            >
+              {{ type.type.name }}
+            </span>
+          </div>
           <RouterLink
+            class="inline-flex items-center gap-2 text-sm font-semibold text-sky-600"
             :to="{ name: 'pokemon-detail', params: { identifier: results.pokemon.data.id } }"
           >
-            View details
+            View details →
           </RouterLink>
         </article>
-        <p v-else class="status">{{ results.pokemon.error ?? 'No Pokémon found.' }}</p>
+        <p v-else class="mt-6 text-sm text-slate-500">
+          {{ results.pokemon.error ?? 'No Pokémon found.' }}
+        </p>
       </section>
 
-      <section>
-        <h2>Moves</h2>
-        <div v-if="results.move.loading" class="status">Searching…</div>
-        <article v-else-if="results.move.data" class="result-card">
-          <h3>{{ results.move.data.name }}</h3>
-          <p>Power: {{ results.move.data.power ?? '—' }}</p>
-          <p>Accuracy: {{ results.move.data.accuracy ?? '—' }}</p>
+      <section class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-semibold text-slate-900">Moves</h2>
+          <span class="text-xs uppercase tracking-[0.2em] text-slate-500">/move</span>
+        </div>
+        <div v-if="results.move.loading" class="mt-6 text-sm text-slate-500">Searching…</div>
+        <article
+          v-else-if="results.move.data"
+          class="mt-4 space-y-2 rounded-2xl border border-slate-200 bg-white/90 p-4"
+        >
+          <h3 class="text-xl font-semibold capitalize">{{ results.move.data.name }}</h3>
+          <p class="text-sm text-slate-600">
+            Power:
+            <span class="font-semibold text-slate-900">
+              {{ results.move.data.power ?? '—' }}
+            </span>
+          </p>
+          <p class="text-sm text-slate-600">
+            Accuracy:
+            <span class="font-semibold text-slate-900">
+              {{ results.move.data.accuracy ?? '—' }}
+            </span>
+          </p>
+          <p class="text-sm text-slate-600">
+            Damage class:
+            <span class="font-semibold capitalize text-slate-900">
+              {{ results.move.data.damage_class.name }}
+            </span>
+          </p>
         </article>
-        <p v-else class="status">{{ results.move.error ?? 'No move found.' }}</p>
+        <p v-else class="mt-6 text-sm text-slate-500">
+          {{ results.move.error ?? 'No move found.' }}
+        </p>
       </section>
 
-      <section>
-        <h2>Items</h2>
-        <div v-if="results.item.loading" class="status">Searching…</div>
-        <article v-else-if="results.item.data" class="result-card">
-          <h3>{{ results.item.data.name }}</h3>
-          <p>Cost: {{ results.item.data.cost ?? '—' }}</p>
+      <section class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-semibold text-slate-900">Items</h2>
+          <span class="text-xs uppercase tracking-[0.2em] text-slate-500">/item</span>
+        </div>
+        <div v-if="results.item.loading" class="mt-6 text-sm text-slate-500">Searching…</div>
+        <article
+          v-else-if="results.item.data"
+          class="mt-4 space-y-3 rounded-2xl border border-slate-200 bg-white/90 p-4"
+        >
+          <div class="flex items-center gap-3">
+            <img
+              v-if="results.item.data.sprites?.default"
+              :src="results.item.data.sprites.default"
+              :alt="`${results.item.data.name} sprite`"
+              class="h-12 w-12 object-contain"
+              loading="lazy"
+              decoding="async"
+            />
+            <h3 class="text-xl font-semibold capitalize">{{ results.item.data.name }}</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            Cost:
+            <span class="font-semibold text-slate-900">
+              {{ results.item.data.cost ?? '—' }}
+            </span>
+          </p>
+          <p class="text-sm text-slate-600">
+            {{
+              results.item.data.effect_entries.find((entry) => entry.language.name === 'en')
+                ?.short_effect ?? 'No effect summary available.'
+            }}
+          </p>
         </article>
-        <p v-else class="status">{{ results.item.error ?? 'No item found.' }}</p>
+        <p v-else class="mt-6 text-sm text-slate-500">
+          {{ results.item.error ?? 'No item found.' }}
+        </p>
       </section>
     </div>
   </section>
 </template>
-
-<style scoped>
-.search-view {
-  padding: 2rem 1.5rem 4rem;
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.search-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.search-input {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.search-input input {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #cbd5f5;
-}
-
-.search-input button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.75rem;
-  background: #2563eb;
-  color: #fff;
-  font-weight: 600;
-}
-
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-}
-
-.result-card {
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  padding: 1rem;
-  background: #fff;
-}
-
-.status {
-  color: #475569;
-}
-
-.eyebrow {
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-h2 {
-  margin-bottom: 0.5rem;
-}
-
-h3 {
-  text-transform: capitalize;
-}
-</style>

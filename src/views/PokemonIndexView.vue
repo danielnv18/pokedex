@@ -208,43 +208,61 @@ watch(
 </script>
 
 <template>
-  <section class="index-view">
-    <div class="index-view__header">
+  <section class="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-10">
+    <div
+      class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+    >
       <div>
-        <p class="eyebrow">Pokémon Index</p>
-        <h1>Browse every Pokémon</h1>
-        <p class="subhead">Search, filter by type, and page through the full Pokédex.</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Pokémon Index</p>
+        <h1 class="mt-3 text-3xl font-semibold text-slate-900">
+          Browse every Pokémon
+        </h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Search, filter by type, and page through the full Pokédex pulled live from PokéAPI.
+        </p>
       </div>
-      <div class="search-input">
-        <label for="pokemon-search">Search</label>
+      <label class="w-full sm:max-w-xs">
+        <span class="text-sm font-medium text-slate-600">Search</span>
         <input
           id="pokemon-search"
           v-model="searchQuery"
           type="search"
-          placeholder="Search by name"
+          placeholder="Search by name (pikachu)"
+          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-base shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
         />
-      </div>
+      </label>
     </div>
 
-    <div class="filters">
+    <div class="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm space-y-6">
       <div>
-        <p class="filters__label">Filter by type</p>
-        <div class="filters__types">
-          <label v-for="type in TYPE_OPTIONS" :key="type">
+        <p class="text-sm font-semibold text-slate-700">Filter by type</p>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          <label
+            v-for="type in TYPE_OPTIONS"
+            :key="type"
+            class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium capitalize text-slate-700 transition hover:border-slate-400"
+          >
             <input
               type="checkbox"
               :value="type"
               :checked="selectedTypes.includes(type)"
+              class="size-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
               @change="filtersStore.toggleType(type)"
             />
-            <span>{{ type }}</span>
+            {{ type }}
           </label>
         </div>
       </div>
 
-      <div class="generation-filter">
-        <label for="generation-select">Generation</label>
-        <select id="generation-select" v-model="generationFilter">
+      <div class="w-full max-w-xs">
+        <label for="generation-select" class="text-sm font-semibold text-slate-700">
+          Generation
+        </label>
+        <select
+          id="generation-select"
+          v-model="generationFilter"
+          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+        >
           <option value="">Any</option>
           <option v-for="generation in GENERATION_OPTIONS" :key="generation" :value="generation">
             {{ generation }}
@@ -253,171 +271,48 @@ watch(
       </div>
     </div>
 
-    <div class="index-view__status">
-      <p v-if="listStatus.isLoading" class="status">Loading Pokémon…</p>
-      <p v-else-if="listStatus.hasError" class="status status--error">
+    <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-center text-sm">
+      <p v-if="listStatus.isLoading" class="text-slate-600">Loading Pokémon…</p>
+      <p v-else-if="listStatus.hasError" class="font-semibold text-red-500">
         {{ listStatus.errorMessage }}
       </p>
-      <p v-else-if="typeLoading" class="status">Filtering by type…</p>
-      <p v-else class="status status--muted">{{ visibleRangeLabel }}</p>
+      <p v-else-if="typeLoading" class="text-slate-600">Filtering by type…</p>
+      <p v-else class="text-slate-500">{{ visibleRangeLabel }}</p>
     </div>
 
-    <ul v-if="filteredResults.length" class="pokemon-grid">
+    <ul
+      v-if="filteredResults.length"
+      class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      aria-live="polite"
+    >
       <li v-for="resource in filteredResults" :key="resource.name">
         <PokemonCard :id="extractId(resource.url)" :name="resource.name" />
       </li>
     </ul>
-    <p v-else class="status">No Pokémon match that query.</p>
+    <p v-else class="text-center text-slate-500">No Pokémon match that query.</p>
 
-    <div class="pagination">
+    <div class="flex flex-wrap items-center justify-center gap-4">
       <button
         type="button"
+        class="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
         :disabled="pagination.offset === 0 || hasTypeFilter"
         @click="changePage('prev')"
       >
         Previous
       </button>
-      <span>{{ visibleRangeLabel }}</span>
-      <button type="button" :disabled="hasTypeFilter" @click="changePage('next')">Next</button>
+      <span class="text-sm text-slate-500">{{ visibleRangeLabel }}</span>
+      <button
+        type="button"
+        class="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="hasTypeFilter"
+        @click="changePage('next')"
+      >
+        Next
+      </button>
     </div>
-    <p v-if="hasTypeFilter" class="pagination-note">
-      Pagination is disabled while filtering by type. Refine the filter or clear it to browse
+    <p v-if="hasTypeFilter" class="text-center text-sm text-slate-500">
+      Pagination is disabled while filtering by type. Refine or clear the selection to browse
       sequentially.
     </p>
   </section>
 </template>
-
-<style scoped>
-.index-view {
-  padding: 2rem 1.5rem 4rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.index-view__header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
-
-.search-input {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.search-input input {
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #cbd5f5;
-  min-width: 240px;
-}
-
-.filters {
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.filters__label {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.filters__types {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.5rem;
-}
-
-.filters__types label {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  text-transform: capitalize;
-}
-
-.pokemon-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.status {
-  text-align: center;
-  color: #475569;
-}
-
-.status--error {
-  color: #dc2626;
-}
-
-.status--muted {
-  color: #94a3b8;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  align-items: center;
-}
-
-.pagination button {
-  padding: 0.5rem 1.25rem;
-  border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-note {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 0.9rem;
-}
-
-.eyebrow {
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  font-size: 0.85rem;
-}
-
-h1 {
-  margin: 0.25rem 0;
-  font-size: clamp(2rem, 5vw, 2.5rem);
-  color: #0f172a;
-}
-
-.subhead {
-  color: #475569;
-}
-
-.generation-filter {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-width: 240px;
-}
-
-.generation-filter select {
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #cbd5f5;
-}
-</style>
