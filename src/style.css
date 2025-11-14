@@ -1,5 +1,81 @@
 @import 'tailwindcss';
 
+@theme {
+  --font-sans: 'Space Grotesk', 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system,
+    sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Space Mono', 'Roboto Mono', ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, monospace;
+
+  --color-midnight-50: #f5f6ff;
+  --color-midnight-100: #e1e4ff;
+  --color-midnight-200: #b9c1ff;
+  --color-midnight-300: #8b97ff;
+  --color-midnight-400: #5f6dff;
+  --color-midnight-500: #3945f5;
+  --color-midnight-600: #2228cf;
+  --color-midnight-700: #181e9c;
+  --color-midnight-800: #0f1469;
+  --color-midnight-900: #080c3a;
+  --color-midnight-950: #04051f;
+
+  --color-sand-50: #fdf8f3;
+  --color-sand-100: #f8ecdd;
+  --color-sand-200: #f0d7b7;
+  --color-sand-300: #e8c08b;
+  --color-sand-400: #dea260;
+  --color-sand-500: #c77e41;
+  --color-sand-600: #a35f30;
+  --color-sand-700: #7a4524;
+  --color-sand-800: #4f2b16;
+  --color-sand-900: #2c160b;
+  --color-sand-950: #140903;
+
+  --color-neon-100: #d3fff7;
+  --color-neon-200: #a1fdf0;
+  --color-neon-300: #5ef0e3;
+  --color-neon-400: #25d6d1;
+  --color-neon-500: #08b8c2;
+  --color-neon-600: #0090a2;
+  --color-neon-700: #006b7a;
+
+  --color-sunset-100: #ffe0f0;
+  --color-sunset-200: #ffbadc;
+  --color-sunset-300: #ff8cc4;
+  --color-sunset-400: #f95c9b;
+  --color-sunset-500: #e93678;
+  --color-sunset-600: #c41a53;
+  --color-sunset-700: #99113d;
+
+  --color-laser-100: #f7f4ff;
+  --color-laser-200: #e7deff;
+  --color-laser-300: #d3beff;
+  --color-laser-400: #b48dff;
+  --color-laser-500: #9a63ff;
+  --color-laser-600: #7a3fe3;
+  --color-laser-700: #5429a6;
+
+  --spacing: 0.25rem;
+
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
+  --radius-pill: 999px;
+
+  --shadow-haze: 0 1px 2px rgb(5 5 31 / 0.08), 0 10px 30px rgb(5 5 31 / 0.25);
+  --shadow-glow: 0 0 25px rgb(94 240 227 / 0.35), 0 10px 40px rgb(57 69 245 / 0.2);
+  --drop-shadow-holo: 0 15px 30px rgb(248 92 155 / 0.35);
+
+  --breakpoint-sm: 36rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -8,15 +84,12 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: #f8fafc;
-    color: #0f172a;
-    font-family:
-      'Inter',
-      'SF Pro Display',
-      'Segoe UI',
-      system-ui,
-      -apple-system,
-      sans-serif;
+    background:
+      radial-gradient(120% 120% at 0% 0%, rgba(233, 54, 120, 0.15), transparent 55%),
+      radial-gradient(120% 120% at 100% 0%, rgba(94, 240, 227, 0.15), transparent 55%),
+      linear-gradient(180deg, var(--color-midnight-950), var(--color-midnight-900));
+    color: var(--color-sand-50);
+    font-family: var(--font-sans);
     text-rendering: optimizeLegibility;
   }
 
@@ -26,16 +99,13 @@
   h4,
   h5,
   h6 {
-    font-family:
-      'Space Grotesk',
-      'Inter',
-      'Segoe UI',
-      system-ui,
-      -apple-system,
-      sans-serif;
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-sand-50);
   }
 
   ::selection {
-    background: rgba(14, 165, 233, 0.2);
+    background: var(--color-neon-300);
+    color: var(--color-midnight-900);
   }
 }

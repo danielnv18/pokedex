@@ -80,6 +80,10 @@ export const useFiltersStore = defineStore('filters', {
       this.searchQuery = query
       this.resetOffset()
     },
+    setTypes(types: string[]) {
+      this.selectedTypes = types.map((type) => type.toLowerCase())
+      this.resetOffset()
+    },
     toggleType(typeName: string) {
       const normalized = typeName.toLowerCase()
       if (this.selectedTypes.includes(normalized)) {

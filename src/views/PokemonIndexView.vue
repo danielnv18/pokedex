@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 
 import PokemonCard from '@/components/PokemonCard.vue'
 import { useFiltersStore } from '@/stores/filters'
@@ -65,6 +66,9 @@ const selectedGenerations = computed(
 const hasTypeFilter = computed(() => selectedTypes.value.length > 0)
 const typeFilteredResources = ref<Array<{ name: string; url: string }> | null>(null)
 const typeLoading = ref(false)
+const isTypeMenuOpen = ref(false)
+const typeMenuRef = ref<HTMLElement | null>(null)
+const typeMenuButtonRef = ref<HTMLButtonElement | null>(null)
 
 const generationFilter = computed({
   get: () => selectedGenerations.value[0] ?? '',
@@ -72,6 +76,40 @@ const generationFilter = computed({
     filtersStore.setGenerations(value ? [value as keyof typeof GENERATION_RANGES] : [])
   },
 })
+
+onClickOutside(
+  typeMenuRef,
+  () => {
+    isTypeMenuOpen.value = false
+  },
+  { ignore: [typeMenuButtonRef] },
+)
+
+const typeSummaryLabel = computed(() => {
+  const summary = selectedTypes.value.map(formatTypeLabel)
+  if (!summary.length) {
+    return 'Any type'
+  }
+  if (summary.length <= 2) {
+    return summary.join(', ')
+  }
+  return `${summary.slice(0, 2).join(', ')} +${summary.length - 2}`
+})
+
+function toggleTypeMenu() {
+  isTypeMenuOpen.value = !isTypeMenuOpen.value
+}
+
+function clearTypeFilters() {
+  if (selectedTypes.value.length) {
+    filtersStore.setTypes([])
+  }
+  isTypeMenuOpen.value = false
+}
+
+function formatTypeLabel(type: string) {
+  return type.charAt(0).toUpperCase() + type.slice(1)
+}
 
 const resourcePool = computed(() => {
   if (typeFilteredResources.value) {
@@ -233,41 +271,152 @@ watch(
       </label>
     </div>
 
-    <div class="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm space-y-6">
-      <div>
-        <p class="text-sm font-semibold text-slate-700">Filter by type</p>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-          <label
-            v-for="type in TYPE_OPTIONS"
-            :key="type"
-            class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium capitalize text-slate-700 transition hover:border-slate-400"
-          >
-            <input
-              type="checkbox"
-              :value="type"
-              :checked="selectedTypes.includes(type)"
-              class="size-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
-              @change="filtersStore.toggleType(type)"
-            />
-            {{ type }}
+    <div class="space-y-4 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm">
+      <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
+        <div class="min-w-56 lg:flex-1">
+          <label class="text-sm font-semibold text-slate-700">Type</label>
+          <div class="relative mt-2" data-testid="type-filter">
+            <button
+              ref="typeMenuButtonRef"
+              type="button"
+              class="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+              :aria-expanded="isTypeMenuOpen"
+              aria-haspopup="listbox"
+              aria-controls="type-filter-popover"
+              @click="toggleTypeMenu"
+            >
+              <span class="truncate">{{ typeSummaryLabel }}</span>
+              <span class="flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                Types
+                <svg
+                  class="size-3.5 transition"
+                  :class="{ 'rotate-180': isTypeMenuOpen }"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 8l5 5 5-5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </button>
+            <Transition
+              enter-active-class="transition duration-150 ease-out"
+              enter-from-class="opacity-0 translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition duration-100 ease-in"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-1"
+            >
+              <div
+                v-if="isTypeMenuOpen"
+                id="type-filter-popover"
+                ref="typeMenuRef"
+                tabindex="-1"
+                class="absolute left-0 top-full z-30 mt-2 w-72 rounded-2xl border border-slate-200 bg-white shadow-xl ring-1 ring-black/5"
+                role="listbox"
+                aria-multiselectable="true"
+                @keydown.esc.stop.prevent="isTypeMenuOpen = false"
+              >
+                <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                  <p class="text-sm font-semibold text-slate-700">Select types</p>
+                  <button
+                    type="button"
+                    class="text-xs font-semibold text-slate-500 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+                    :disabled="!selectedTypes.length"
+                    @click="clearTypeFilters"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div class="max-h-72 overflow-y-auto px-4 py-3">
+                  <div class="grid grid-cols-2 gap-2">
+                    <label
+                      v-for="type in TYPE_OPTIONS"
+                      :key="type"
+                      class="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300"
+                    >
+                      <input
+                        type="checkbox"
+                        :value="type"
+                        :checked="selectedTypes.includes(type)"
+                        class="size-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                        @change="filtersStore.toggleType(type)"
+                      />
+                      <span class="capitalize">{{ type }}</span>
+                    </label>
+                  </div>
+                </div>
+                <p class="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+                  Selecting multiple types intersects the results so only Pokémon that match every
+                  type remain.
+                </p>
+              </div>
+            </Transition>
+          </div>
+        </div>
+        <div class="w-full min-w-48">
+          <label for="generation-select" class="text-sm font-semibold text-slate-700">
+            Generation
           </label>
+          <div class="relative mt-2">
+            <select
+              id="generation-select"
+              v-model="generationFilter"
+              class="flex h-12 w-full appearance-none items-center rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+            >
+              <option value="">Any</option>
+              <option
+                v-for="generation in GENERATION_OPTIONS"
+                :key="generation"
+                :value="generation"
+              >
+                {{ generation }}
+              </option>
+            </select>
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400"
+            >
+              <svg class="size-4" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M6 8l4 4 4-4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="w-full max-w-xs">
-        <label for="generation-select" class="text-sm font-semibold text-slate-700">
-          Generation
-        </label>
-        <select
-          id="generation-select"
-          v-model="generationFilter"
-          class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+      <div
+        v-if="selectedTypes.length"
+        class="flex flex-wrap gap-2"
+        aria-label="Selected types"
+      >
+        <button
+          v-for="type in selectedTypes"
+          :key="type"
+          type="button"
+          class="group inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold capitalize text-slate-700 shadow-sm transition hover:border-red-200 hover:text-red-500"
+          @click="filtersStore.toggleType(type)"
         >
-          <option value="">Any</option>
-          <option v-for="generation in GENERATION_OPTIONS" :key="generation" :value="generation">
-            {{ generation }}
-          </option>
-        </select>
+          {{ formatTypeLabel(type) }}
+          <span
+            aria-hidden="true"
+            class="text-slate-400 transition group-hover:text-red-400"
+          >
+            &times;
+          </span>
+        </button>
       </div>
     </div>
 
